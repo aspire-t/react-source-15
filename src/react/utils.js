@@ -1,3 +1,4 @@
+import { addEvent } from './event'
 // 如果obj是数组，只取第一个元素，如果不是数组，就返回自己
 export function onlyOne(obj) {
   return Array.isArray(obj) ? obj[0] : obj
@@ -19,7 +20,10 @@ export function setProps(dom, props) {
 function setProp(dom, key, value) {
   if (/^on/.test(key)) {
     // 如果属性名以on开头，说明要时间绑定
-    dom[key.toLowerCase()] = value
+    // dom[key.toLowerCase()] = value
+    addEvent(dom, key, value)
+  } else if (key === 'className') {
+    dom.className = value
   } else if (key === 'style') {
     for (const styleName in value) {
       dom.style[styleName] = value[styleName]
