@@ -19,4 +19,55 @@ export function addEvent(dom, eventType, listener) {
 }
 // 真正事件触发的回调函数统一是这个dispatchEvent方法
 // event 就是原生DOM事件对象，但是传递给我们的监听函数的并不是它
-function dispatchEvent(event) {}
+let syntheticEvent
+function dispatchEvent(event) {
+  let { type, target } = event // type = click target = button
+  let eventType = 'on' + type //onclick
+  debugger
+
+  // 如果没有，就创建新的事件对象
+  syntheticEvent = getSyntheticEvent(event) // 在此处给syntheticEvent赋值
+  while (target) {
+    let { eventStore } = target
+    let listener = eventStore && eventStore[eventType] // onclick
+    if (listener) {
+      // 执行监听函数
+      listener.call(target, syntheticEvent)
+    }
+    target = target.parentNode
+  }
+  // 等所有的监听函数执行完了，就可以清掉所有的属性了，供下次复用此syntheticEvent对象
+  for (let key in syntheticEvent) {
+    // if (key !== 'persist') {
+    //   syntheticEvent[key] = null
+    // }
+    if (syntheticEvent.hasOwnProperty(key)) {
+      delete syntheticEvent[key]
+    }
+  }
+}
+// 如果说执行了persist，就让syntheticEvent指向了新对象，while循环结束之后再清除的是新对象的属性
+function persist() {
+  // 重新赋值，就切断了原对象的引用，清空的是新对象
+  syntheticEvent = { persist }
+}
+
+function getSyntheticEvent(nativeEvent) {
+  // 第一次才会创建，以后就不会创建，始终会是同一个对象
+  if (!syntheticEvent) {
+    syntheticEvent = {}
+    syntheticEvent.__proto__.persist = persist
+  }
+
+  syntheticEvent.nativeEvent = nativeEvent
+  syntheticEvent.currentTarget = nativeEvent.target
+  //把原生事件对象上的方法和属性都拷贝到了合成对象上
+  for (let key in nativeEvent) {
+    if (typeof nativeEvent[key] === 'function') {
+      syntheticEvent[key] = nativeEvent[key].bind(nativeEvent)
+    } else {
+      syntheticEvent[key] = nativeEvent[key]
+    }
+  }
+  return syntheticEvent
+}

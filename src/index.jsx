@@ -1,8 +1,12 @@
 import React from './react'
 import ReactDOM from './react-dom'
 
-let onClick = () => {
-  alert('hello world')
+let onClick = (event) => {
+  console.log(event)
+  event.persist()
+  // setInterval(() => {
+  //   console.log(event)
+  // }, 1000)
 }
 
 // let element = (
