@@ -1,4 +1,4 @@
-import { TEXT, ELEMENT } from './constants'
+import { TEXT, ELEMENT, CLASS_COMPONENT, FUNCTION_COMPONENT } from './constants'
 import { onlyOne, setProps } from './utils'
 
 export function ReactElement($$typeof, type, key, ref, props) {
@@ -20,8 +20,21 @@ export function createDOM(element) {
   } else if ($$typeof === ELEMENT) {
     // 如果此虚拟dom是原生dom节点
     dom = createNativeDOM(element)
+  } else if ($$typeof === FUNCTION_COMPONENT) {
+    // 如果此虚拟dom是一个函数组件，就渲染此函数组件
+    dom = createFunctionComponentDOM(element)
+  } else if ($$typeof === CLASS_COMPONENT) {
+    // 如果此虚拟dom是一个类组件，就渲染此类组价
+    // dom = createClassComponentDOM(element)
   }
   return dom
+}
+// 创建函数组件对应的真实的DOM对象
+function createFunctionComponentDOM(element) {
+  let { type, props } = element // type = FunctionComponent
+  let renderElement = type(props) // 返回要渲染的react元素
+  let newDOM = createDOM(renderElement)
+  return newDOM
 }
 
 function createNativeDOM(element) {
@@ -34,6 +47,7 @@ function createNativeDOM(element) {
   // 2. 给此DOM元素添加属性
   return dom
 }
+
 function createNativeDOMChildren(parentNode, children) {
   // 儿子可能是个多维数组，所以需要打平
   children &&

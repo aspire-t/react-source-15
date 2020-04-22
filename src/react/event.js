@@ -46,6 +46,7 @@ function dispatchEvent(event) {
     }
   }
 }
+
 // 如果说执行了persist，就让syntheticEvent指向了新对象，while循环结束之后再清除的是新对象的属性
 function persist() {
   // 重新赋值，就切断了原对象的引用，清空的是新对象
